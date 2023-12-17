@@ -1,7 +1,8 @@
 
 //LSB order
-byte leds[8] = {2,3,4,5,6,7,8,9};
-byte currValue = 0b00000001;
+byte leds[8] = {2,3,4,5,6,8,7,9};
+byte prevValue = 0b00000000;
+byte currValue = 0b00000000;
 
 
 void setup() {
@@ -43,31 +44,37 @@ void writeToLeds(byte b_to_write)
     }
     if(temp > 0){
       digitalWrite(leds[i],HIGH);
+      /*
+      Serial.print("printing to led:");
+      Serial.println(i);
+      */
     }
     else{
       digitalWrite(leds[i],LOW);
     }
   }
+  prevValue = currValue;
 }
 
 void loop() {
   int numChars = 0;
   bool updated = false;
   while (Serial.available() > 0)
-  {
+  { 
+    //Create a place to hold the incoming message
+    byte inByte = Serial.parseInt();
+    if(inByte == NULL && numChars > 0) continue;
+    
+    //Serial.println(inByte);
     if(updated==false){
       for(int i=0; i<8; i++){
         digitalWrite(leds[i],LOW);
       }
     }
-    
-    //Create a place to hold the incoming message
-    byte inByte = Serial.parseInt();
-    if(inByte == NULL && numChars > 0) continue;
     numChars += 1;
     currValue = inByte;
     updated = true;
   }
-  writeToLeds(currValue);
-  delay(10);
+  if(currValue != prevValue)
+    writeToLeds(currValue);
 }
